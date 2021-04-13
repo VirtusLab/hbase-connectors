@@ -59,7 +59,7 @@
     </license>
   </licenses>
   <modules>
-    <module>kafka</module>
+    <!--<module>kafka</module>-->
     <module>spark</module>
     <module>hbase-connectors-assembly</module>
   </modules>

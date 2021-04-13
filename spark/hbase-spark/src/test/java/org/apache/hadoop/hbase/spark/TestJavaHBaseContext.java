@@ -74,11 +74,11 @@ public class TestJavaHBaseContext implements Serializable {
   private static JavaHBaseContext HBASE_CONTEXT;
   private static final Logger LOG = LoggerFactory.getLogger(TestJavaHBaseContext.class);
 
-  byte[] tableName = Bytes.toBytes("t1");
-  byte[] columnFamily = Bytes.toBytes("c");
-  byte[] columnFamily1 = Bytes.toBytes("d");
-  String columnFamilyStr = Bytes.toString(columnFamily);
-  String columnFamilyStr1 = Bytes.toString(columnFamily1);
+  private byte[] tableName = Bytes.toBytes("t1");
+  private byte[] columnFamily = Bytes.toBytes("c");
+  private byte[] columnFamily1 = Bytes.toBytes("d");
+  private String columnFamilyStr = Bytes.toString(columnFamily);
+  private String columnFamilyStr1 = Bytes.toString(columnFamily1);
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

@@ -42,7 +42,7 @@ public class TestProcessMutations {
       "<rules><rule action=\"route\" table=\"MyNamespace:MyTable\" "
           + "topic=\"foo\"/></rules>";
 
-  ProducerForTesting myTestingProducer;
+  private ProducerForTesting myTestingProducer;
 
   @Before
   public void setup() {

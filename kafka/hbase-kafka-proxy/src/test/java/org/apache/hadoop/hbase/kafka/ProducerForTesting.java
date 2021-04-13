@@ -32,8 +32,9 @@ import org.apache.kafka.test.MockSerializer;
  * Mocks Kafka producer for testing
  */
 public class ProducerForTesting extends MockProducer<byte[], byte[]> {
-  Map<String, List<HBaseKafkaEvent>> messages = new HashMap<>();
-  SpecificDatumReader<HBaseKafkaEvent> dreader = new SpecificDatumReader<>(HBaseKafkaEvent.SCHEMA$);
+  private Map<String, List<HBaseKafkaEvent>> messages = new HashMap<>();
+  private SpecificDatumReader<HBaseKafkaEvent> dreader =
+          new SpecificDatumReader<>(HBaseKafkaEvent.SCHEMA$);
 
   public ProducerForTesting() {
     super(true, new MockSerializer(), new MockSerializer());

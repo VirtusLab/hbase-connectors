@@ -63,10 +63,10 @@ public class KafkaTableForBridge implements Table {
   private DatumWriter<HBaseKafkaEvent> avroWriter;
 
   private static final class CheckMutation {
-    byte[]qualifier;
-    byte[]family;
-    Cell cell;
-    List<String> topics = new ArrayList<>();
+    private byte[]qualifier;
+    private byte[]family;
+    private Cell cell;
+    private List<String> topics = new ArrayList<>();
   }
 
   public KafkaTableForBridge(TableName tableName,

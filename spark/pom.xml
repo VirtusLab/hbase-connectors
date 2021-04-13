@@ -36,10 +36,7 @@
   <description>Spark Connectors for Apache HBase</description>
 
   <modules>
-    <module>hbase-spark-protocol</module>
-    <module>hbase-spark-protocol-shaded</module>
     <module>hbase-spark</module>
-    <module>hbase-spark-it</module>
   </modules>
 
   <properties>
@@ -64,16 +61,6 @@
         <groupId>org.apache.hbase.connectors.spark</groupId>
         <artifactId>hbase-spark-protocol</artifactId>
         <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hbase.connectors.spark</groupId>
-        <artifactId>hbase-spark-protocol-shaded</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hbase.thirdparty</groupId>
-        <artifactId>hbase-shaded-miscellaneous</artifactId>
-        <version>${hbase-thirdparty.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

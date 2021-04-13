@@ -51,18 +51,18 @@ public class SparkSQLPushDownFilter extends FilterBase{
   protected static final Logger log = LoggerFactory.getLogger(SparkSQLPushDownFilter.class);
 
   //The following values are populated with protobuffer
-  DynamicLogicExpression dynamicLogicExpression;
-  byte[][] valueFromQueryArray;
-  HashMap<ByteArrayComparable, HashMap<ByteArrayComparable, String>>
+  private DynamicLogicExpression dynamicLogicExpression;
+  private byte[][] valueFromQueryArray;
+  private HashMap<ByteArrayComparable, HashMap<ByteArrayComparable, String>>
           currentCellToColumnIndexMap;
 
   //The following values are transient
-  HashMap<String, ByteArrayComparable> columnToCurrentRowValueMap = null;
+  private HashMap<String, ByteArrayComparable> columnToCurrentRowValueMap = null;
 
   static final byte[] rowKeyFamily = new byte[0];
   static final byte[] rowKeyQualifier = Bytes.toBytes("key");
 
-  String encoderClassName;
+  private String encoderClassName;
 
   public SparkSQLPushDownFilter(DynamicLogicExpression dynamicLogicExpression,
                                 byte[][] valueFromQueryArray,

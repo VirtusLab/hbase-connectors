@@ -28,14 +28,14 @@ import org.apache.yetus.audience.InterfaceAudience;
  */
 @InterfaceAudience.Private
 public abstract class Rule {
-  TableName tableName;
+  private TableName tableName;
   private byte [] columnFamily;
   private byte [] qualifier;
 
-  boolean qualifierStartsWith = false;
-  boolean qualifierEndsWith = false;
+  private boolean qualifierStartsWith = false;
+  private boolean qualifierEndsWith = false;
 
-  byte []ast = Bytes.toBytes("*");
+  private byte []ast = Bytes.toBytes("*");
 
   /**
    * Indicates if the table,column family, and qualifier match the rule
