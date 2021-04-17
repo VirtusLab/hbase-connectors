@@ -21,15 +21,15 @@ import java.net.InetSocketAddress
 import java.util
 import java.util.UUID
 import javax.management.openmbean.KeyAlreadyExistsException
-
-import org.apache.yetus.audience.InterfaceAudience;
+import org.apache.yetus.audience.InterfaceAudience
 import org.apache.hadoop.hbase.fs.HFileSystem
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.io.compress.Compression
 import org.apache.hadoop.hbase.io.compress.Compression.Algorithm
 import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding
-import org.apache.hadoop.hbase.io.hfile.{HFile, CacheConfig, HFileContextBuilder, HFileWriterImpl}
-import org.apache.hadoop.hbase.regionserver.{HStore, HStoreFile, StoreFileWriter, BloomType}
+import org.apache.hadoop.hbase.io.hfile.{AbstractHFileWriter, CacheConfig, HFile, HFileContextBuilder, HFileWriterV2}
+import org.apache.hadoop.hbase.KeyValue
+import org.apache.hadoop.hbase.regionserver.{BloomType, HStore, StoreFile}
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.broadcast.Broadcast
@@ -37,17 +37,19 @@ import org.apache.spark.rdd.RDD
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.spark.HBaseRDDFunctions._
 import org.apache.hadoop.hbase.client._
+
 import scala.reflect.ClassTag
 import org.apache.spark.{SerializableWritable, SparkContext}
-import org.apache.hadoop.hbase.mapreduce.{TableMapReduceUtil,
-TableInputFormat, IdentityTableMapper}
+import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat, TableMapReduceUtil}
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.streaming.dstream.DStream
+
 import java.io._
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod
-import org.apache.hadoop.fs.{Path, FileAlreadyExistsException, FileSystem}
+import org.apache.hadoop.fs.{FileAlreadyExistsException, FileSystem, Path}
+
 import scala.collection.mutable
 
 /**
@@ -629,8 +631,8 @@ class HBaseContext(@transient val sc: SparkContext,
       }
       val defaultCompressionStr = config.get("hfile.compression",
         Compression.Algorithm.NONE.getName)
-      val hfileCompression = HFileWriterImpl
-        .compressionByName(defaultCompressionStr)
+      val hfileCompression =
+        utils.compressionByName(defaultCompressionStr)
       val tableRawName = tableName.getName
 
       val familyHFileWriteOptionsMapInternal =
@@ -704,6 +706,8 @@ class HBaseContext(@transient val sc: SparkContext,
     } finally {
       if(null != conn) conn.close()
     }
+
+
   }
 
   /**
@@ -763,8 +767,8 @@ class HBaseContext(@transient val sc: SparkContext,
       }
       val defaultCompressionStr = config.get("hfile.compression",
         Compression.Algorithm.NONE.getName)
-      val defaultCompression = HFileWriterImpl
-        .compressionByName(defaultCompressionStr)
+      val defaultCompression =
+        utils.compressionByName(defaultCompressionStr)
       val nowTimeStamp = System.currentTimeMillis()
       val tableRawName = tableName.getName
 
@@ -916,12 +920,23 @@ class HBaseContext(@transient val sc: SparkContext,
 
     //Add a '_' to the file name because this is a unfinished file.  A rename will happen
     // to remove the '_' when the file is closed.
-    new WriterLength(0,
-      new StoreFileWriter.Builder(conf, new CacheConfig(tempConf), new HFileSystem(fs))
-        .withBloomType(BloomType.valueOf(familyOptions.bloomType))
-        .withComparator(CellComparator.getInstance()).withFileContext(hFileContext)
-        .withFilePath(new Path(familydir, "_" + UUID.randomUUID.toString.replaceAll("-", "")))
-        .withFavoredNodes(favoredNodes).build())
+    val customPath = new Path(familydir, "_" + UUID.randomUUID.toString.replaceAll("-", ""))
+    new WriterLength(
+      0,
+      new StoreFile.WriterBuilder(conf, new CacheConfig(tempConf),
+        fs)
+        .withFilePath(customPath)
+        .withComparator(KeyValue.COMPARATOR)
+        .withFavoredNodes(favoredNodes)
+        .withFileContext(hFileContext)
+        .build()
+        )
+
+//      Builder(conf, new CacheConfig(tempConf), new HFileSystem(fs))
+//        .withBloomType(BloomType.valueOf(familyOptions.bloomType))
+//        .withComparator(CellComparator).withFileContext(hFileContext)
+//        .withFilePath(new Path(familydir, "_" + UUID.randomUUID.toString.replaceAll("-", "")))
+//        .withFavoredNodes(favoredNodes).build())
 
   }
 
@@ -1072,18 +1087,18 @@ class HBaseContext(@transient val sc: SparkContext,
    * @param compactionExclude      The exclude compaction metadata flag for the HFile
    */
   private def closeHFileWriter(fs:FileSystem,
-                               w: StoreFileWriter,
+                               w: StoreFile.Writer,
                                regionSplitPartitioner: BulkLoadPartitioner,
                                previousRow: Array[Byte],
                                compactionExclude: Boolean): Unit = {
     if (w != null) {
-      w.appendFileInfo(HStoreFile.BULKLOAD_TIME_KEY,
+      w.appendFileInfo(StoreFile.BULKLOAD_TIME_KEY,
         Bytes.toBytes(System.currentTimeMillis()))
-      w.appendFileInfo(HStoreFile.BULKLOAD_TASK_KEY,
+      w.appendFileInfo(StoreFile.BULKLOAD_TASK_KEY,
         Bytes.toBytes(regionSplitPartitioner.getPartition(previousRow)))
-      w.appendFileInfo(HStoreFile.MAJOR_COMPACTION_KEY,
+      w.appendFileInfo(StoreFile.MAJOR_COMPACTION_KEY,
         Bytes.toBytes(true))
-      w.appendFileInfo(HStoreFile.EXCLUDE_FROM_MINOR_COMPACTION_KEY,
+      w.appendFileInfo(StoreFile.EXCLUDE_FROM_MINOR_COMPACTION_KEY,
         Bytes.toBytes(compactionExclude))
       w.appendTrackedTimestampsToMetadata()
       w.close()
@@ -1109,7 +1124,19 @@ class HBaseContext(@transient val sc: SparkContext,
    * @param written The writer to be wrapped
    * @param writer  The number of bytes written to the writer
    */
-  class WriterLength(var written:Long, val writer:StoreFileWriter)
+  class WriterLength(var written:Long, val writer: StoreFile.Writer)
+}
+
+object utils {
+  def compressionByName(compressionStr: String): Algorithm = {
+    compressionStr match {
+      case "lzo" => Algorithm.LZO
+      case "gz" => Algorithm.GZ
+      case "snappy" => Algorithm.SNAPPY
+      case "lz4" => Algorithm.LZ4
+      case _ => throw new Exception(s"$compressionStr compression not supported!")
+    }
+  }
 }
 
 @InterfaceAudience.Private

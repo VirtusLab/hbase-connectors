@@ -36,18 +36,6 @@
   <properties>
     <license.bundles.dependencies>true</license.bundles.dependencies>
   </properties>
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.hbase.connectors.kafka</groupId>
-      <artifactId>hbase-kafka-proxy</artifactId>
-      <version>${revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase.connectors.kafka</groupId>
-      <artifactId>hbase-kafka-model</artifactId>
-      <version>${revision}</version>
-    </dependency>
-  </dependencies>
   <build>
     <plugins>
       <plugin>

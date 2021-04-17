@@ -109,7 +109,7 @@ public class SparkSQLPushDownFilter extends FilterBase{
   }
 
   @Override
-  public ReturnCode filterCell(final Cell c) throws IOException {
+  public ReturnCode filterKeyValue(final Cell c) throws IOException {
 
     //If the map RowValueMap is empty then we need to populate
     // the row key

@@ -59,7 +59,7 @@
     </license>
   </licenses>
   <modules>
-    <module>kafka</module>
+   <!-- <module>kafka</module> -->
     <module>spark</module>
     <module>hbase-connectors-assembly</module>
   </modules>
@@ -292,6 +292,21 @@
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-shaded-client</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-shaded-server</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-shaded-check-invariants</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-common</artifactId>
         <version>${hbase.version}</version>
       </dependency>
       <dependency>
